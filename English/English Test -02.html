@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Global People's Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Base Styles & Theming --- */
+        :root {
+            --primary-color: #8A2BE2; /* A vibrant purple */
+            --secondary-color: #4A90E2; /* A complementary blue */
+            --text-color: #333;
+            --light-text: #555;
+            --bg-color: #F0F2F5;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --shadow: 5px 5px 15px rgba(0,0,0,0.1), -5px -5px 15px rgba(255,255,255,0.7);
+            --inner-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), inset -2px -2px 5px rgba(255,255,255,0.8);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --backdrop-blur: 10px;
+        }
+
+        html[data-theme='dark'] {
+            --primary-color: #9B59B6;
+            --secondary-color: #5DADE2;
+            --text-color: #EAEAEA;
+            --light-text: #B0B3B8;
+            --bg-color: #18191A;
+            --card-bg: rgba(50, 50, 50, 0.6);
+            --glass-bg: rgba(30, 30, 30, 0.4);
+            --shadow: 5px 5px 15px rgba(0,0,0,0.3), -5px -5px 15px rgba(40,40,40,0.5);
+            --inner-shadow: inset 2px 2px 5px rgba(0,0,0,0.3), inset -2px -2px 5px rgba(40,40,40,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Layout */
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .container.loaded {
+            opacity: 1;
+        }
+
+        /* Header & Navigation */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--glass-bg);
+            backdrop-filter: blur(var(--backdrop-blur));
+            -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            transition: var(--transition);
+            white-space: nowrap; 
+        }
+
+        nav a:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Theme Toggle Switch */
+        .theme-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input { display: none; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 2rem 2rem;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            z-index: 1001; /* Must be higher than modal */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .welcome-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .welcome-screen h1 {
+            font-size: clamp(2rem, 8vw, 4rem);
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-subtitle {
+            color: var(--light-text);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+            padding: 0 1rem;
+        }
+
+        .primary-btn {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: var(--transition);
+        }
+        .primary-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Grids & Cards */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .card { 
+            background-color: var(--card-bg);
+            backdrop-filter: blur(var(--backdrop-blur));
+            -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+        .card h3 { 
+            color: var(--primary-color);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        .card h4 { 
+             color: var(--primary-color);
+             font-size: 1.1rem;
+        }
+        .card p { color: var(--light-text); font-size: 0.9rem; }
+        .card-icon { 
+            width: 50px;
+            height: 50px;
+            margin: 0 auto;
+            color: var(--secondary-color);
+        }
+
+        /* Back Button */
+        .back-btn {
+            margin-top: 2rem;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .back-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        /* Screen Management */
+        .screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+            overflow-y: auto;
+        }
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .screen-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .screen-header h2 { font-size: 2rem; font-weight: 600; }
+        .screen-header p { color: var(--light-text); }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .modal-content h3 { font-size: 1.5rem; color: var(--primary-color); }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 1rem; padding: 1rem; }
+            
+            nav { 
+                width: 100%; 
+                justify-content: space-around; 
+                align-items: center;
+                gap: 0.5rem; 
+            }
+            nav a {
+                padding: 0.5rem 0.6rem; 
+                font-size: 0.9rem; 
+            }
+
+            .content-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+            .screen-header h2 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+ 
+   <div class="test-list" style="display: none;"> <!-- Hiding this as it seems like a test element -->
+    <a href="Test 1.html" class="test-link" target="_blank">Test 1</a>
+   </div>
+ 
+    <div class="welcome-screen" id="welcomeScreen">
+        <h1>Welcome to Global People's Academy!</h1>
+        <p class="welcome-subtitle">Your premier destination for comprehensive learning and test preparation</p>
+        <button class="primary-btn" id="enterBtn">Enter Academy</button>
+    </div>
+
+    <div class="container" id="appContainer">
+        <header>
+            <div class="logo">Global People's Academy</div>
+            <nav>
+                <a href="/* Paste the link for Pricing here */" target="_blank" rel="noopener noreferrer">Pricing</a>
+                <a href="/* Paste the link for Get Roll No. here */" target="_blank" rel="noopener noreferrer">Get Roll No.</a>
+                <a href="/* Paste the link for Contact here */" target="_blank" rel="noopener noreferrer">Contact</a>
+                <div class="theme-switch" id="themeSwitch">
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </nav>
+        </header>
+
+        <div class="main-content">
+            <div class="screen active" id="subjectsScreen">
+                <div class="screen-header">
+                    <h2>Choose a Subject</h2>
+                    <p>Select a subject to explore its topics</p>
+                </div>
+                <div class="content-grid" id="subjectsGrid"></div>
+            </div>
+
+            <div class="screen" id="topicsScreen">
+                <div class="screen-header">
+                    <h2 id="topicsScreenTitle">Topics</h2>
+                    <p>Select a topic to view available tests</p>
+                </div>
+                <div class="content-grid" id="topicsGrid"></div>
+                <button class="back-btn" id="backToSubjectsBtn">Back to Subjects</button>
+            </div>
+
+            <div class="screen" id="testsScreen">
+                <div class="screen-header">
+                    <h2 id="testsScreenTitle">Tests</h2>
+                    <p>Select a test to begin</p>
+                </div>
+                <div class="content-grid" id="testsGrid"></div>
+                <button class="back-btn" id="backToTopicsBtn">Back to Topics</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3>Coming Soon!</h3>
+            <p>This test will be available shortly.</p>
+            <button class="primary-btn" id="modalCloseBtn" style="margin-top: 1.5rem;">Back</button>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const elements = {
+            appContainer: document.getElementById('appContainer'),
+            welcomeScreen: document.getElementById('welcomeScreen'),
+            enterBtn: document.getElementById('enterBtn'),
+            screens: {
+                subjects: document.getElementById('subjectsScreen'),
+                topics: document.getElementById('topicsScreen'),
+                tests: document.getElementById('testsScreen')
+            },
+            grids: {
+                subjects: document.getElementById('subjectsGrid'),
+                topics: document.getElementById('topicsGrid'),
+                tests: document.getElementById('testsGrid')
+            },
+            titles: {
+                topics: document.getElementById('topicsScreenTitle'),
+                tests: document.getElementById('testsScreenTitle')
+            },
+            buttons: {
+                backToSubjects: document.getElementById('backToSubjectsBtn'),
+                backToTopics: document.getElementById('backToTopicsBtn')
+            },
+            themeSwitch: document.getElementById('themeSwitch'),
+            themeToggle: document.getElementById('themeToggle'),
+            modal: document.getElementById('modal'),
+            modalCloseBtn: document.getElementById('modalCloseBtn')
+        };
+        
+        // --- DATA (Explicitly defined for easy editing) ---
+        const academyData = {
+            subjects: [
+                { 
+                    name: 'English', 
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg>`, 
+                    topics: [
+                        { name: 'Noun', tests: [
+                            // --- THIS IS THE LINK I'VE UPDATED ---
+                            { name: 'Test - 01', link: 'Test 1.html' }, 
+                            { name: 'Test - 02', link: '/* Paste link for English > Noun > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Noun > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Noun > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Noun > Test 05 here */' },
+                        ]},
+                        { name: 'Pronoun', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for English > Pronoun > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for English > Pronoun > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Pronoun > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Pronoun > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Pronoun > Test 05 here */' },
+                        ]},
+                        { name: 'Verb', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for English > Verb > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for English > Verb > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Verb > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Verb > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Verb > Test 05 here */' },
+                        ]},
+                        { name: 'Adverb', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for English > Adverb > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for English > Adverb > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Adverb > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Adverb > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Adverb > Test 05 here */' },
+                        ]},
+                        { name: 'Adjective', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for English > Adjective > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for English > Adjective > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Adjective > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Adjective > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Adjective > Test 05 here */' },
+                        ]},
+                        { name: 'Conjunction', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for English > Conjunction > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for English > Conjunction > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Conjunction > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Conjunction > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Conjunction > Test 05 here */' },
+                        ]},
+                        { name: 'Preposition', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for English > Preposition > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for English > Preposition > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for English > Preposition > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for English > Preposition > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for English > Preposition > Test 05 here */' },
+                        ]},
+                    ] 
+                },
+                { 
+                    name: 'GK', 
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>`, 
+                    topics: [
+                        { name: 'Current Affairs', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for GK > Current Affairs > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for GK > Current Affairs > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for GK > Current Affairs > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for GK > Current Affairs > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for GK > Current Affairs > Test 05 here */' },
+                        ]},
+                        { name: 'Science', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for GK > Science > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for GK > Science > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for GK > Science > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for GK > Science > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for GK > Science > Test 05 here */' },
+                        ]},
+                        { name: 'Technology', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for GK > Technology > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for GK > Technology > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for GK > Technology > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for GK > Technology > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for GK > Technology > Test 05 here */' },
+                        ]},
+                        { name: 'Sports', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for GK > Sports > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for GK > Sports > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for GK > Sports > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for GK > Sports > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for GK > Sports > Test 05 here */' },
+                        ]},
+                        { name: 'Awards', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for GK > Awards > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for GK > Awards > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for GK > Awards > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for GK > Awards > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for GK > Awards > Test 05 here */' },
+                        ]},
+                    ]
+                },
+                { 
+                    name: 'History', 
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12s4.03 8.25 9 8.25z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75c-2.485 0-4.5-1.679-4.5-3.75s2.015-3.75 4.5-3.75s4.5 1.679 4.5 3.75-2.015 3.75-4.5 3.75z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75v6.75" /></svg>`, 
+                    topics: [
+                        { name: 'Ancient History', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for History > Ancient History > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for History > Ancient History > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for History > Ancient History > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for History > Ancient History > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for History > Ancient History > Test 05 here */' },
+                        ]},
+                        { name: 'Medieval History', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for History > Medieval History > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for History > Medieval History > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for History > Medieval History > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for History > Medieval History > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for History > Medieval History > Test 05 here */' },
+                        ]},
+                        { name: 'Modern History', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for History > Modern History > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for History > Modern History > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for History > Modern History > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for History > Modern History > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for History > Modern History > Test 05 here */' },
+                        ]},
+                        { name: 'World History', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for History > World History > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for History > World History > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for History > World History > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for History > World History > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for History > World History > Test 05 here */' },
+                        ]},
+                    ] 
+                },
+                { 
+                    name: 'Polity', 
+                    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h6M9 12h6m-6 5.25h6M5.25 6h.008v.008H5.25V6zm0 5.25h.008v.008H5.25v-5.25zm0 5.25h.008v.008H5.25v-5.25zm13.5 0h.008v.008h-.008v-5.25zm0-5.25h.008v.008h-.008V6z" /></svg>`, 
+                    topics: [
+                        { name: 'Constitution', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for Polity > Constitution > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for Polity > Constitution > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for Polity > Constitution > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for Polity > Constitution > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for Polity > Constitution > Test 05 here */' },
+                        ]},
+                        { name: 'Parliament', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for Polity > Parliament > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for Polity > Parliament > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for Polity > Parliament > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for Polity > Parliament > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for Polity > Parliament > Test 05 here */' },
+                        ]},
+                        { name: 'Judiciary', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for Polity > Judiciary > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for Polity > Judiciary > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for Polity > Judiciary > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for Polity > Judiciary > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for Polity > Judiciary > Test 05 here */' },
+                        ]},
+                        { name: 'Executive', tests: [
+                            { name: 'Test - 01', link: '/* Paste link for Polity > Executive > Test 01 here */' },
+                            { name: 'Test - 02', link: '/* Paste link for Polity > Executive > Test 02 here */' },
+                            { name: 'Test - 03', link: '/* Paste link for Polity > Executive > Test 03 here */' },
+                            { name: 'Test - 04', link: '/* Paste link for Polity > Executive > Test 04 here */' },
+                            { name: 'Test - 05', link: '/* Paste link for Polity > Executive > Test 05 here */' },
+                        ]},
+                    ] 
+                },
+            ]
+        };
+
+        function requestFullScreen() {
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen().catch(err => console.log(err));
+            else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            else if (el.msRequestFullscreen) el.msRequestFullscreen();
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            elements.themeToggle.checked = theme === 'dark';
+        }
+        
+        const render = {
+            subjects: () => {
+                elements.grids.subjects.innerHTML = academyData.subjects.map(subject => `
+                    <div class="card" data-subject-name="${subject.name}">
+                        <div class="card-icon">${subject.icon}</div>
+                        <h3>${subject.name}</h3>
+                        <p>${subject.topics.length} topics</p>
+                    </div>
+                `).join('');
+            },
+            topics: (subject) => {
+                elements.titles.topics.textContent = `${subject.name} Topics`;
+                elements.grids.topics.innerHTML = subject.topics.map(topic => `
+                    <div class="card" data-topic-name="${topic.name}">
+                        <h4>${topic.name}</h4>
+                        <p>${topic.tests.length} tests</p>
+                    </div>
+                `).join('');
+            },
+            tests: (subjectName, topic) => {
+                elements.titles.tests.textContent = `${subjectName} - ${topic.name}`;
+                elements.grids.tests.innerHTML = topic.tests.map(test => {
+                    const isLinkPlaceholder = test.link.trim().startsWith('/*');
+                    
+                    if (isLinkPlaceholder) {
+                        return `
+                            <div class="card test-card" data-show-modal="true">
+                                <h4>${test.name}</h4>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <a href="${test.link}" class="card test-card" target="_blank" rel="noopener noreferrer">
+                                <h4>${test.name}</h4>
+                            </a>
+                        `;
+                    }
+                }).join('');
+            }
+        };
+
+        let currentSubject = null;
+        let currentTopic = null;
+
+        function showScreen(screenName) {
+            Object.values(elements.screens).forEach(s => s.classList.remove('active'));
+            elements.screens[screenName].classList.add('active');
+        }
+
+        function handleSubjectClick(subjectName) {
+            currentSubject = academyData.subjects.find(s => s.name === subjectName);
+            if (currentSubject) {
+                render.topics(currentSubject);
+                showScreen('topics');
+            }
+        }
+
+        function handleTopicClick(topicName) {
+            currentTopic = currentSubject.topics.find(t => t.name === topicName);
+            if (currentSubject && currentTopic) {
+                render.tests(currentSubject.name, currentTopic);
+                showScreen('tests');
+            }
+        }
+        
+        function showModal() {
+            elements.modal.classList.add('active');
+        }
+
+        function hideModal() {
+            elements.modal.classList.remove('active');
+        }
+
+        elements.enterBtn.addEventListener('click', () => {
+            requestFullScreen();
+            elements.welcomeScreen.classList.add('hidden');
+            elements.appContainer.classList.add('loaded');
+        });
+        
+        document.body.addEventListener('click', (e) => {
+            const subjectCard = e.target.closest('.card[data-subject-name]');
+            if (subjectCard) {
+                handleSubjectClick(subjectCard.dataset.subjectName);
+                return;
+            }
+
+            const topicCard = e.target.closest('.card[data-topic-name]');
+            if (topicCard) {
+                handleTopicClick(topicCard.dataset.topicName);
+                return;
+            }
+            
+            const modalTestCard = e.target.closest('.test-card[data-show-modal="true"]');
+            if(modalTestCard) {
+                showModal();
+                return;
+            }
+        });
+        
+        elements.buttons.backToSubjects.addEventListener('click', () => showScreen('subjects'));
+        elements.buttons.backToTopics.addEventListener('click', () => {
+            if(currentSubject) {
+                render.topics(currentSubject);
+                showScreen('topics');
+            }
+        });
+
+        elements.modalCloseBtn.addEventListener('click', hideModal);
+        elements.modal.addEventListener('click', (e) => {
+            if (e.target === elements.modal) hideModal();
+        });
+
+        elements.themeSwitch.addEventListener('click', () => {
+            const newTheme = elements.themeToggle.checked ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        function init() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+            
+            render.subjects();
+        }
+
+        init();
+    });
+    </script>
+</body>
+</html>
